@@ -1,1 +1,2 @@
-JSON_TEST_DATA RCDATA JsonTestData.zip
+# Declare a resource script named 'JSON_TEST_DATA' associated with the 'JsonTestData.zip' file.
+# This resource contains test data in JSON format for use in the application.

@@ -3,81 +3,71 @@ unit Tests.Grijjy.Collections.Sets;
 interface
 
 uses
-  DUnitX.TestFramework,
-  Tests.Grijjy.Collections.Base,
-  Grijjy.Collections;
+  DUnitX.TestFramework, // Implements the testing framework for automated unit testing
+  Tests.Grijjy.Collections.Base, // Base test class for collections
+  Grijjy.Collections; // The collections library being tested
 
 type
-  TTestTgoSet<T> = class(TTestCollectionBase<T>)
+  TTestTgoSet<T> = class(TTestCollectionBase<T>) // Test class for the TgoSet collection
   private
-    FCUT: TgoSet<T>;
-    FValues: TArray<T>;
-    procedure FillSet;
-    procedure CheckItems(const AExpected: TArray<T>);
+    FCUT: TgoSet<T>; // The collection under test
+    FValues: TArray<T>; // Array of values used for testing
+    procedure FillSet; // Procedure to fill the set with test values
+    procedure CheckItems(const AExpected: TArray<T>); // Procedure to check if the set contains the expected items
   public
-    [Setup]
+    [Setup] // DUnitX attribute to execute before each test method
     procedure SetUp;
 
-    [Teardown]
+    [Teardown] // DUnitX attribute to execute after each test method
     procedure TearDown;
 
+    // Test methods for various operations on the set
     [Test]
     procedure TestAdd;
-
     [Test]
     procedure TestRemove;
-
     [Test]
     procedure TestClear;
-
     [Test]
     procedure TestAddOrSet;
-
     [Test]
     procedure TestContains;
-
     [Test]
     procedure TestToArray;
-
     [Test]
     procedure TestGetEnumerator;
   end;
 
-type
-  TTestTgoObjectSet = class(TTestCollectionBase<TFoo>)
+  TTestTgoObjectSet = class(TTestCollectionBase<TFoo>) // Test class for the TgoObjectSet collection
   private
-    FCUT: TgoObjectSet<TFoo>;
-    FValues: TArray<TFoo>;
-    procedure FillSet;
-    procedure CheckItems(const AExpectedIndices: array of Integer);
+    FCUT: TgoObjectSet<TFoo>; // The collection under test
+    FValues: TArray<TFoo>; // Array of objects used for testing
+    procedure FillSet; // Procedure to fill the set with test objects
+    procedure CheckItems(const AExpectedIndices: array of Integer); // Procedure to check if the set contains the expected objects
   public
-    [Setup]
+    [Setup] // DUnitX attribute to execute before each test method
     procedure SetUp;
 
-    [Teardown]
+    [Teardown] // DUnitX attribute to execute after each test method
     procedure TearDown;
 
+    // Test methods for various operations on the set
     [Test]
     procedure TestAdd;
-
     [Test]
     procedure TestRemove;
-
     [Test]
     procedure TestClear;
-
     [Test]
     procedure TestAddOrSet;
-
     [Test]
     procedure TestContains;
-
     [Test]
     procedure TestToArray;
-
     [Test]
     procedure TestGetEnumerator;
 
+    // Additional test method for the TgoObjectSet collection
     [Test]
     procedure TestExtract;
   end;
@@ -85,8 +75,8 @@ type
 implementation
 
 uses
-  System.SysUtils,
-  System.Generics.Defaults;
+  System.SysUtils, // Provides various utility functions
+  System.Generics.Defaults; // Provides default implementations of generic interfaces
 
 { TTestTgoSet<T> }
 
@@ -95,35 +85,36 @@ var
   Value: T;
   I: Integer;
 begin
-  Assert.AreEqual(Length(AExpected), FCUT.Count);
+  Assert.AreEqual(Length(AExpected), FCUT.Count); // Check if the set count matches the expected count
 
   for I := 0 to Length(AExpected) - 1 do
   begin
-    Value := AExpected[I];
-    Assert.IsTrue(FCUT.Contains(Value));
+    Value := AExpected[I]; // Get the expected item
+    Assert.IsTrue(FCUT.Contains(Value)); // Check if the set contains the expected item
   end;
 end;
 
 procedure TTestTgoSet<T>.FillSet;
 begin
-  FValues := CreateValues(3);
-  FCUT.Add(FValues[0]);
-  FCUT.Add(FValues[1]);
-  FCUT.Add(FValues[2]);
+  FValues := CreateValues(3); // Create an array of 3 test values
+  FCUT.Add(FValues[0]); // Add the first value to the set
+  FCUT.Add(FValues[1]); // Add the second value to the set
+  FCUT.Add(FValues[2]); // Add the third value to the set
 end;
 
 procedure TTestTgoSet<T>.SetUp;
 begin
-  inherited;
-  FCUT := TgoSet<T>.Create;
+  inherited; // Call the base class SetUp method
+  FCUT := TgoSet<T>.Create; // Create a new set for testing
 end;
 
 procedure TTestTgoSet<T>.TearDown;
 begin
-  inherited;
-  FCUT.Free;
+  inherited; // Call the base class TearDown method
+  FCUT.Free; // Free the set created for testing
 end;
 
+// Test methods for various operations on the set
 procedure TTestTgoSet<T>.TestAdd;
 begin
   FillSet;
@@ -134,26 +125,26 @@ procedure TTestTgoSet<T>.TestAddOrSet;
 var
   Values: TArray<T>;
 begin
-  Values := CreateValues(4);
-  FCUT.Add(Values[0]);
-  FCUT.Add(Values[1]);
-  FCUT.Add(Values[2]);
-  Assert.AreEqual(3, FCUT.Count);
+  Values := CreateValues(4); // Create an array of 4 test values
+  FCUT.Add(Values[0]); // Add the first value to the set
+  FCUT.Add(Values[1]); // Add the second value to the set
+  FCUT.Add(Values[2]); // Add the third value to the set
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.AddOrSet(Values[1]);
-  Assert.AreEqual(3, FCUT.Count);
+  FCUT.AddOrSet(Values[1]); // Add or set the second value to the set
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.AddOrSet(Values[3]);
-  CheckItems(Values);
+  FCUT.AddOrSet(Values[3]); // Add or set the fourth value to the set
+  CheckItems(Values); // Check if the set contains the expected items
 end;
 
 procedure TTestTgoSet<T>.TestClear;
 begin
   FillSet;
-  Assert.AreEqual(3, FCUT.Count);
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.Clear;
-  Assert.AreEqual(0, FCUT.Count);
+  FCUT.Clear; // Clear the set
+  Assert.AreEqual(0, FCUT.Count); // Check if the set count matches the expected count
 end;
 
 procedure TTestTgoSet<T>.TestContains;
@@ -161,11 +152,11 @@ var
   RogueValue: T;
 begin
   FillSet;
-  RogueValue := CreateValue(3);
-  Assert.IsTrue(FCUT.Contains(FValues[0]));
-  Assert.IsTrue(FCUT.Contains(FValues[1]));
-  Assert.IsTrue(FCUT.Contains(FValues[2]));
-  Assert.IsFalse(FCUT.Contains(RogueValue));
+  RogueValue := CreateValue(3); // Create a rogue value for testing
+  Assert.IsTrue(FCUT.Contains(FValues[0])); // Check if the set contains the first value
+  Assert.IsTrue(FCUT.Contains(FValues[1])); // Check if the set contains the second value
+  Assert.IsTrue(FCUT.Contains(FValues[2])); // Check if the set contains the third value
+  Assert.IsFalse(FCUT.Contains(RogueValue)); // Check if the set does not contain the rogue value
 end;
 
 procedure TTestTgoSet<T>.TestGetEnumerator;
@@ -175,21 +166,20 @@ var
   C: IEqualityComparer<T>;
 begin
   FillSet;
-
-  C := TEqualityComparer<T>.Default;
-  B := 0;
-  for Value in FCUT do
+  C := TEqualityComparer<T>.Default; // Get the default comparer for the type
+  B := 0; // Initialize the result variable
+  for Value in FCUT do // Iterate over the set
   begin
     if (C.Equals(Value, FValues[0])) then
-      B := B or $01
+      B := B or $01 // Set the first bit if the value matches the first test value
     else if (C.Equals(Value, FValues[1])) then
-      B := B or $02
+      B := B or $02 // Set the second bit if the value matches the second test value
     else if (C.Equals(Value, FValues[2])) then
-      B := B or $04
+      B := B or $04 // Set the third bit if the value matches the third test value
     else
-      Assert.Fail('Unexpected item');
+      Assert.Fail('Unexpected item'); // Fail the test if the value does not match any test value
   end;
-  Assert.AreEqual($07, Integer(B));
+  Assert.AreEqual($07, Integer(B)); // Check if the result variable matches the expected value
 end;
 
 procedure TTestTgoSet<T>.TestRemove;
@@ -198,28 +188,28 @@ var
   V: TArray<T>;
 begin
   FillSet;
-  RogueValue := CreateValue(3);
-  Assert.AreEqual(3, FCUT.Count);
+  RogueValue := CreateValue(3); // Create a rogue value for testing
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.Remove(RogueValue);
-  Assert.AreEqual(3, FCUT.Count);
-  CheckItems(FValues);
+  FCUT.Remove(RogueValue); // Remove the rogue value from the set
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
+  CheckItems(FValues); // Check if the set contains the expected items
 
-  FCUT.Remove(FValues[0]);
-  Assert.AreEqual(2, FCUT.Count);
-  SetLength(V, 2);
-  V[0] := FValues[1];
-  V[1] := FValues[2];
-  CheckItems(V);
+  FCUT.Remove(FValues[0]); // Remove the first value from the set
+  Assert.AreEqual(2, FCUT.Count); // Check if the set count matches the expected count
+  SetLength(V, 2); // Initialize the result array
+  V[0] := FValues[1]; // Set the first element of the result array
+  V[1] := FValues[2]; // Set the second element of the result array
+  CheckItems(V); // Check if the set contains the expected items
 
-  FCUT.Remove(FValues[2]);
-  Assert.AreEqual(1, FCUT.Count);
-  SetLength(V, 1);
-  V[0] := FValues[1];
-  CheckItems(V);
+  FCUT.Remove(FValues[2]); // Remove the third value from the set
+  Assert.AreEqual(1, FCUT.Count); // Check if the set count matches the expected count
+  SetLength(V, 1); // Initialize the result array
+  V[0] := FValues[1]; // Set the first element of the result array
+  CheckItems(V); // Check if the set contains the expected items
 
-  FCUT.Remove(FValues[1]);
-  Assert.AreEqual(0, FCUT.Count);
+  FCUT.Remove(FValues[1]); // Remove the second value from the set
+  Assert.AreEqual(0, FCUT.Count); // Check if the set count matches the expected count
 end;
 
 procedure TTestTgoSet<T>.TestToArray;
@@ -230,22 +220,22 @@ var
   B: Byte;
 begin
   FillSet;
-  C := TEqualityComparer<T>.Default;
-  A := FCUT.ToArray;
-  Assert.AreEqual(3, Length(A));
-  B := 0;
+  C := TEqualityComparer<T>.Default; // Get the default comparer for the type
+  A := FCUT.ToArray; // Get the array representation of the set
+  Assert.AreEqual(3, Length(A)); // Check if the array length matches the expected length
+  B := 0; // Initialize the result variable
   for I := 0 to 2 do
   begin
     if C.Equals(A[I], FValues[0]) then
-      B := B or $01
+      B := B or $01 // Set the first bit if the array element matches the first test value
     else if C.Equals(A[I], FValues[1]) then
-      B := B or $02
+      B := B or $02 // Set the second bit if the array element matches the second test value
     else if C.Equals(A[I], FValues[2]) then
-      B := B or $04
+      B := B or $04 // Set the third bit if the array element matches the third test value
     else
-      Assert.Fail('Unexpected key in set');
+      Assert.Fail('Unexpected item'); // Fail the test if the array element does not match any test value
   end;
-  Assert.AreEqual($07, Integer(B));
+  Assert.AreEqual($07, Integer(B)); // Check if the result variable matches the expected value
 end;
 
 { TTestTgoObjectSet }
@@ -256,12 +246,12 @@ var
   I: Integer;
   Value: TFoo;
 begin
-  Assert.AreEqual(Length(AExpectedIndices), FCUT.Count);
+  Assert.AreEqual(Length(AExpectedIndices), FCUT.Count); // Check if the set count matches the expected count
 
   for I := 0 to Length(AExpectedIndices) - 1 do
   begin
-    Value := FValues[AExpectedIndices[I]];
-    Assert.IsTrue(FCUT.Contains(Value));
+    Value := FValues[AExpectedIndices[I]]; // Get the expected object
+    Assert.IsTrue(FCUT.Contains(Value)); // Check if the set contains the expected object
   end;
 end;
 
@@ -269,18 +259,18 @@ procedure TTestTgoObjectSet.FillSet;
 var
   I: Integer;
 begin
-  SetLength(FValues, 3);
+  SetLength(FValues, 3); // Initialize the array of objects
   for I := 0 to 2 do
   begin
-    FValues[I] := TFoo.Create(I);
-    FCUT.Add(FValues[I]);
+    FValues[I] := TFoo.Create(I); // Create a new object and add it to the array
+    FCUT.Add(FValues[I]); // Add the object to the set
   end;
 end;
 
 procedure TTestTgoObjectSet.SetUp;
 begin
-  inherited;
-  FCUT := TgoObjectSet<TFoo>.Create;
+  inherited; // Call the base class SetUp method
+  FCUT := TgoObjectSet<TFoo>.Create; // Create a new set for testing
 end;
 
 procedure TTestTgoObjectSet.TearDown;
@@ -288,12 +278,13 @@ var
   I: Integer;
 begin
   for I := 0 to Length(FValues) - 1 do
-    FValues[I] := nil;
-  FCUT.Free;
+    FValues[I] := nil; // Free the objects created for testing
+  FCUT.Free; // Free the set created for testing
   FCUT := nil;
-  inherited;
+  inherited; // Call the base class TearDown method
 end;
 
+// Test methods for various operations on the set
 procedure TTestTgoObjectSet.TestAdd;
 begin
   FillSet;
@@ -303,24 +294,24 @@ end;
 procedure TTestTgoObjectSet.TestAddOrSet;
 begin
   FillSet;
-  Assert.AreEqual(3, FCUT.Count);
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.AddOrSet(FValues[1]);
-  Assert.AreEqual(3, FCUT.Count);
+  FCUT.AddOrSet(FValues[1]); // Add or set the second object to the set
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  SetLength(FValues, 4);
-  FValues[3] := TFoo.Create(5);
-  FCUT.AddOrSet(FValues[3]);
-  CheckItems([0, 1, 2, 3]);
+  SetLength(FValues, 4); // Initialize the array of objects
+  FValues[3] := TFoo.Create(5); // Create a new object and add it to the array
+  FCUT.AddOrSet(FValues[3]); // Add or set the fourth object to the set
+  CheckItems([0, 1, 2, 3]); // Check if the set contains the expected objects
 end;
 
 procedure TTestTgoObjectSet.TestClear;
 begin
   FillSet;
-  Assert.AreEqual(3, FCUT.Count);
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.Clear;
-  Assert.AreEqual(0, FCUT.Count);
+  FCUT.Clear; // Clear the set
+  Assert.AreEqual(0, FCUT.Count); // Check if the set count matches the expected count
 end;
 
 procedure TTestTgoObjectSet.TestContains;
@@ -328,12 +319,12 @@ var
   RogueValue: TFoo;
 begin
   FillSet;
-  RogueValue := TFoo.Create(5);
-  Assert.IsTrue(FCUT.Contains(FValues[0]));
-  Assert.IsTrue(FCUT.Contains(FValues[1]));
-  Assert.IsTrue(FCUT.Contains(FValues[2]));
-  Assert.IsFalse(FCUT.Contains(RogueValue));
-  RogueValue.Free;
+  RogueValue := TFoo.Create(5); // Create a rogue object for testing
+  Assert.IsTrue(FCUT.Contains(FValues[0])); // Check if the set contains the first object
+  Assert.IsTrue(FCUT.Contains(FValues[1])); // Check if the set contains the second object
+  Assert.IsTrue(FCUT.Contains(FValues[2])); // Check if the set contains the third object
+  Assert.IsFalse(FCUT.Contains(RogueValue)); // Check if the set does not contain the rogue object
+  RogueValue.Free; // Free the rogue object
 end;
 
 procedure TTestTgoObjectSet.TestExtract;
@@ -341,15 +332,15 @@ var
   Value, RogueValue: TFoo;
 begin
   FillSet;
-  RogueValue := TFoo.Create(5);
+  RogueValue := TFoo.Create(5); // Create a rogue object for testing
 
-  Value := FCUT.Extract(FValues[1]);
-  Assert.IsNotNull(Value);
-  Value.Free;
+  Value := FCUT.Extract(FValues[1]); // Extract the second object from the set
+  Assert.IsNotNull(Value); // Check if the extracted object is not null
+  Value.Free; // Free the extracted object
 
-  Value := FCUT.Extract(RogueValue);
-  Assert.IsNull(Value);
-  RogueValue.Free;
+  Value := FCUT.Extract(RogueValue); // Extract the rogue object from the set
+  Assert.IsNull(Value); // Check if the extracted object is null
+  RogueValue.Free; // Free the rogue object
 end;
 
 procedure TTestTgoObjectSet.TestGetEnumerator;
@@ -358,19 +349,19 @@ var
   B: Byte;
 begin
   FillSet;
-  B := 0;
-  for Value in FCUT do
+  B := 0; // Initialize the result variable
+  for Value in FCUT do // Iterate over the set
   begin
     if (Value.Value = 0) then
-      B := B or $01
+      B := B or $01 // Set the first bit if the object value matches the first test value
     else if (Value.Value = 1) then
-      B := B or $02
+      B := B or $02 // Set the second bit if the object value matches the second test value
     else if (Value.Value = 2) then
-      B := B or $04
+      B := B or $04 // Set the third bit if the object value matches the third test value
     else
-      Assert.Fail('Unexpected item');
+      Assert.Fail('Unexpected item'); // Fail the test if the object value does not match any test value
   end;
-  Assert.AreEqual($07, Integer(B));
+  Assert.AreEqual($07, Integer(B)); // Check if the result variable matches the expected value
 end;
 
 procedure TTestTgoObjectSet.TestRemove;
@@ -378,24 +369,24 @@ var
   RogueValue: TFoo;
 begin
   FillSet;
-  RogueValue := TFoo.Create(3);
-  Assert.AreEqual(3, FCUT.Count);
+  RogueValue := TFoo.Create(3); // Create a rogue object for testing
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
 
-  FCUT.Remove(RogueValue);
-  Assert.AreEqual(3, FCUT.Count);
-  CheckItems([0, 1, 2]);
-  RogueValue.Free;
+  FCUT.Remove(RogueValue); // Remove the rogue object from the set
+  Assert.AreEqual(3, FCUT.Count); // Check if the set count matches the expected count
+  CheckItems([0, 1, 2]); // Check if the set contains the expected objects
+  RogueValue.Free; // Free the rogue object
 
-  FCUT.Remove(FValues[0]);
-  Assert.AreEqual(2, FCUT.Count);
-  CheckItems([1, 2]);
+  FCUT.Remove(FValues[0]); // Remove the first object from the set
+  Assert.AreEqual(2, FCUT.Count); // Check if the set count matches the expected count
+  CheckItems([1, 2]); // Check if the set contains the expected objects
 
-  FCUT.Remove(FValues[2]);
-  Assert.AreEqual(1, FCUT.Count);
-  CheckItems([1]);
+  FCUT.Remove(FValues[2]); // Remove the third object from the set
+  Assert.AreEqual(1, FCUT.Count); // Check if the set count matches the expected count
+  CheckItems([1]); // Check if the set contains the expected object
 
-  FCUT.Remove(FValues[1]);
-  Assert.AreEqual(0, FCUT.Count);
+  FCUT.Remove(FValues[1]); // Remove the second object from the set
+  Assert.AreEqual(0, FCUT.Count); // Check if the set count matches the expected count
 end;
 
 procedure TTestTgoObjectSet.TestToArray;
@@ -405,65 +396,9 @@ var
   B: Byte;
 begin
   FillSet;
-  A := FCUT.ToArray;
-  Assert.AreEqual(3, Length(A));
-  B := 0;
+  A := FCUT.ToArray; // Get the array representation of the set
+  Assert.AreEqual(3, Length(A)); // Check if the array length matches the expected length
+  B := 0; // Initialize the result variable
   for I := 0 to 2 do
   begin
-    if (A[I].Value = 0) then
-      B := B or $01
-    else if (A[I].Value = 1) then
-      B := B or $02
-    else if (A[I].Value = 2) then
-      B := B or $04
-    else
-      Assert.Fail('Unexpected key in set');
-  end;
-  Assert.AreEqual($07, Integer(B));
-end;
-
-initialization
-  TDUnitX.RegisterTestFixture(TTestTgoSet<ShortInt>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<ShortInt>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Byte>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<SmallInt>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Word>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Integer>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Cardinal>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Boolean>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TDigit>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TDigits>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Single>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Double>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Extended>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Comp>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Currency>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TFoo>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<IBaz>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<PInteger>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TTestProc>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TTestMethod>);
-  {$IFNDEF NEXTGEN}
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TStr1>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TStr2>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TStr3>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<ShortString>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<AnsiString>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<WideString>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<AnsiChar>);
-  {$ENDIF}
-  TDUnitX.RegisterTestFixture(TTestTgoSet<UnicodeString>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Variant>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<Int64>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<UInt64>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TBytes>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<WideChar>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TTestArray>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TSimpleRecord>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TManagedRecord>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TFooBarRecord>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TManagedArray>);
-  TDUnitX.RegisterTestFixture(TTestTgoSet<TFooBarArray>);
-
-  TDUnitX.RegisterTestFixture(TTestTgoObjectSet);
-end.
+   

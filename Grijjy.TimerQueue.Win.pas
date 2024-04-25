@@ -6,26 +6,26 @@ unit Grijjy.TimerQueue.Win;
 interface
 
 uses
-  System.Classes,
-  System.SysUtils,
-  System.SyncObjs,
-  System.DateUtils,
-  System.Generics.Collections,
-  Winapi.Windows;
+  System.Classes, // for TObject and constructor/destructor syntax
+  System.SysUtils, // for cardinal type and SysUtils functions
+  System.SyncObjs, // for TCriticalSection
+  System.DateUtils, // for DateUtils functions
+  System.Generics.Collections, // for TDictionary
+  Winapi.Windows; // for Windows API functions
 
 type
   TgoTimer = class;
-  TOnTimer = procedure(const ASender: TObject) of object;
+  TOnTimer = procedure(const ASender: TObject) of object; // event type for timer
 
   { Timer object }
   TgoTimer = class(TObject)
   private
-    FHandle: THandle;
-    FInterval: Cardinal;
-    FOnTimer: TOnTimer;
+    FHandle: THandle; // handle of the timer object
+    FInterval: Cardinal; // timer interval in milliseconds
+    FOnTimer: TOnTimer; // timer callback event
   public
-    constructor Create;
-    destructor Destroy; override;
+    constructor Create; // constructor
+    destructor Destroy; override; // destructor
   public
     { Handle of the timer object }
     property Handle: THandle read FHandle;
@@ -35,34 +35,34 @@ type
 
     { Timer callback event  }
     property OnTimer: TOnTimer read FOnTimer write FOnTimer;
-end;
+  end;
 
   { Timer queue instance }
   TgoTimerQueue = class(TObject)
   private
-    FHandle: THandle;
+    FHandle: THandle; // handle of the timer queue
   private
-    procedure _Release(const ATimer: TgoTimer);
-    procedure ReleaseAll;
+    procedure _Release(const ATimer: TgoTimer); // procedure to release a timer
+    procedure ReleaseAll; // procedure to release all timers
   public
-    constructor Create;
-    destructor Destroy; override;
+    constructor Create; // constructor
+    destructor Destroy; override; // destructor
   public
     { Adds a new timer to the queue}
-    function Add(const AInterval: Cardinal; const AOnTimer: TOnTimer): THandle;
+    function Add(const AInterval: Cardinal; const AOnTimer: TOnTimer): THandle; // function to add a new timer
 
     { Release an existing timer }
-    procedure Release(const AHandle: THandle);
+    procedure Release(const AHandle: THandle); // procedure to release an existing timer
 
     { Change the internal rate of a timer }
-    function SetInterval(const AHandle: THandle; const AInterval: Cardinal): Boolean;
+    function SetInterval(const AHandle: THandle; const AInterval: Cardinal): Boolean; // function to change the interval of a timer
   end;
 
 implementation
 
 var
-  _Timers: TDictionary<THandle, TgoTimer>;
-  _TimersLock: TCriticalSection;
+  _Timers: TDictionary<THandle, TgoTimer>; // dictionary to store all timers
+  _TimersLock: TCriticalSection; // critical section to protect the dictionary
 
 { TgoTimer }
 

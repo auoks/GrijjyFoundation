@@ -3,37 +3,39 @@ unit Tests.Grijjy.Collections.Base;
 interface
 
 uses
-  System.TypInfo,
-  System.SysUtils,
-  System.Generics.Defaults,
-  System.Generics.Collections,
-  DUnitX.TestFramework;
+  System.TypInfo, // Provides types information about classes, interfaces, and other types
+  System.SysUtils, // Contains various utility functions
+  System.Generics.Defaults, // Provides default generic classes
+  System.Generics.Collections, // Provides generic collection classes
+  DUnitX.TestFramework; // Test framework for automated unit testing
 
 type
-  TTestCollectionBase<T> = class abstract
+  TTestCollectionBase<T> = class abstract // Abstract base class for testing generic collections
   private
-    FTypeInfo: PTypeInfo;
-    FTypeData: PTypeData;
-    FAllocatedValues: TList<T>;
-    FComparer: IEqualityComparer<T>;
+    FTypeInfo: PTypeInfo; // Holds the type information of the generic type T
+    FTypeData: PTypeData; // Holds additional type information of the generic type T
+    FAllocatedValues: TList<T>; // List to store allocated values during tests
+    FComparer: IEqualityComparer<T>; // Comparer for comparing values of type T
   private
-    procedure ReleaseValue(const AValue: T);
+    procedure ReleaseValue(const AValue: T); // Procedure to release allocated values
   protected
-    procedure SetUp;
-    procedure TearDown;
-    function CreateValue(const AValue: Integer): T;
-    function CreateValues(const ACount: Integer): TArray<T>; overload;
-    function CreateValues(const AValues: array of Integer): TArray<T>; overload;
-    procedure TestEquals(const AExpected, AActual: T);
+    procedure SetUp; virtual; // Setup method called before each test
+    procedure TearDown; virtual; // Teardown method called after each test
+    function CreateValue(const AValue: Integer): T; // Creates a value of type T
+    function CreateValues(const ACount: Integer): TArray<T>; overload; // Creates an array of values of type T
+    function CreateValues(const AValues: array of Integer): TArray<T>; overload; // Creates an array of values of type T from a given list of integers
+    procedure TestEquals(const AExpected, AActual: T); // Tests if two values of type T are equal
   end;
 
 {$REGION 'Different sample types for testing generic collections'}
+// Type declarations for various sample types used in testing generic collections
 type
   TDigit = (Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine);
   TDigits = set of TDigit;
   TTestProc = procedure(const AParam: Integer);
 
 {$IFNDEF NEXTGEN}
+// String types for different sizes (only applicable to pre-NextGen compilers)
 type
   {$IF (RTLVersion = 33)}
   // For some reason, Delphi 10.3 Rio raises AVs with short string of length 1
@@ -45,6 +47,7 @@ type
   TStr3 = String[3];
 {$ENDIF}
 
+// Sample record types
 type
   TSimpleRecord = record
     A: Integer;
@@ -53,13 +56,13 @@ type
     D: Word;
   end;
 
-type
   TManagedRecord = record
     A: Integer;
     B: TBytes;
     C: String;
   end;
 
+// Class and interface types
 type
   TBar = class;
 
@@ -94,6 +97,7 @@ type
     property Foo: TFoo read FFoo write FFoo;
   end;
 
+// Interface type
 type
   IBaz = interface
   ['{A6B59548-5982-4D6A-90CA-46134A514802}']
@@ -102,6 +106,7 @@ type
     property Value: Integer read GetValue;
   end;
 
+// Interfaced object type
 type
   TBaz = class(TInterfacedObject, IBaz)
   private
@@ -112,12 +117,14 @@ type
     constructor Create(const AValue: Integer);
   end;
 
+// Record types with nested objects
 type
   TFooBarRecord = record
     Foo: TFoo;
     Bar: TBar;
   end;
 
+// Array types
 type
   TTestArray = array [0..2] of Integer;
   TManagedArray = TArray<UnicodeString>;
@@ -191,6 +198,7 @@ end;
 { TTestCollectionBase<T> }
 
 function TTestCollectionBase<T>.CreateValue(const AValue: Integer): T;
+// Creates a value of type T based on the type information
 var
   I1: Int8 absolute Result;
   U1: UInt8 absolute Result;
@@ -233,7 +241,7 @@ var
   {$ENDIF}
 begin
   case FTypeInfo.Kind of
-    tkInteger,
+    tkInteger, // Integer types
     tkEnumeration:
       begin
         case FTypeData.OrdType of
@@ -248,45 +256,45 @@ begin
         end;
       end;
 
-    tkFloat:
+    tkFloat: // Floating-point types
       begin
         case FTypeData.FloatType of
-          ftSingle  : R4 := AValue;
-          ftDouble  : R8 := AValue;
+          ftSingle: R4 := AValue;
+          ftDouble: R8 := AValue;
           ftExtended: R10 := AValue;
-          ftComp    : RI8 := AValue;
-          ftCurr    : RC8 := AValue;
+          ftComp: RI8 := AValue;
+          ftCurr: RC8 := AValue;
         else
           System.Assert(False);
         end;
       end;
 
-    tkClass:
+    tkClass: // Class types
       begin
         System.Assert(TypeInfo(T) = TypeInfo(TFoo));
         Obj := TFoo.Create(AValue);
       end;
 
-    tkClassRef:
+    tkClassRef: // Class reference types
       Cls := TFoo;
 
-    tkInterface:
+    tkInterface: // Interface types
       Intf := TBaz.Create(AValue);
 
-    tkPointer:
+    tkPointer: // Pointer types
       Ptr := Pointer(AValue);
 
-    tkProcedure:
+    tkProcedure: // Procedure types
       Proc := Pointer(AValue);
 
-    tkMethod:
+    tkMethod: // Method types
       begin
         Method.Code := Pointer(AValue shr 4);
         Method.Data := Pointer(AValue and $0F);
       end;
 
     {$IFNDEF NEXTGEN}
-    tkString:
+    tkString: // String types (only applicable to pre-NextGen compilers)
       case SizeOf(T) of
         2: begin Str1[0] := #1; Str1[1] := AnsiChar(AValue); end;
         3: begin Str2[0] := #2; Str2[1] := AnsiChar(AValue); Str2[2] := AnsiChar(AValue shr 8) end;
@@ -295,64 +303,65 @@ begin
         StrN := ShortString(IntToStr(AValue));
       end;
 
-    tkLString:
+    tkLString: // Long string types
       AnsiStr := AnsiString(IntToStr(AValue));
 
-    tkWString:
+    tkWString: // Wide string types
       WideStr := WideString(IntToStr(AValue));
     {$ENDIF}
 
-    tkUString:
+    tkUString: // Unicode string types
       UnicodeStr := UnicodeString(IntToStr(AValue));
 
-    tkVariant:
+    tkVariant: // Variant types
       V := AValue;
 
-    tkInt64:
+    tkInt64: // Int64 types
       I8 := AValue;
 
-    tkDynArray:
-      case FTypeData.DynArrElType^^.Kind of
-        tkInteger:
-          begin
-            SetLength(Bytes, 2);
-            Bytes[0] := AValue;
-            Bytes[1] := AValue * 2;
-          end;
+    tkDynArray: // Dynamic array types
+      begin
+        case FTypeData.DynArrElType^^.Kind of
+          tkInteger:
+            begin
+              SetLength(Bytes, 2);
+              Bytes[0] := AValue;
+              Bytes[1] := AValue * 2;
+            end;
 
-        tkUString:
-          begin
-            SetLength(MA, 2);
-            MA[0] := UnicodeString(IntToStr(AValue));
-            MA[1] := UnicodeString(IntToStr(AValue * 2));
-          end;
+          tkUString:
+            begin
+              SetLength(MA, 2);
+              MA[0] := UnicodeString(IntToStr(AValue));
+              MA[1] := UnicodeString(IntToStr(AValue * 2));
+            end;
 
-        tkRecord:
-          begin
-            SetLength(FBA, 2);
-            FBA[0].Foo := TFoo.Create(AValue);
-            FBA[0].Bar := TBar.Create(AValue * 2);
-            FBA[0].Foo.Bar := FBA[0].Bar;
-            FBA[0].Bar.Foo := FBA[0].Foo;
+          tkRecord:
+            begin
+              SetLength(FBA, 2);
+              FBA[0].Foo := TFoo.Create(AValue);
+              FBA[0].Bar := TBar.Create(AValue * 2);
+              FBA[0].Foo.Bar := FBA[0].Bar;
+              FBA[0].Bar.Foo := FBA[0].Foo;
 
-            FBA[1].Foo := TFoo.Create(AValue * 3);
-            FBA[1].Bar := TBar.Create(AValue * 4);
-            FBA[1].Foo.Bar := FBA[1].Bar;
-            FBA[1].Bar.Foo := FBA[1].Foo;
-          end
-      else
-        System.Assert(False);
+              FBA[1].Foo := TFoo.Create(AValue * 3);
+              FBA[1].Bar := TBar.Create(AValue * 4);
+              FBA[1].Foo.Bar := FBA[1].Bar;
+              FBA[1].Bar.Foo := FBA[1].Foo;
+            end
+        else
+          System.Assert(False);
       end;
 
     {$IFNDEF NEXTGEN}
-    tkChar:
+    tkChar: // Char types (only applicable to pre-NextGen compilers)
       AC := AnsiChar(AValue);
     {$ENDIF}
 
-    tkWChar:
+    tkWChar: // WideChar types
       WC := Char(AValue);
 
-    tkSet:
+    tkSet: // Set types
       begin
         case SizeOf(T) of
           1: U1 := AValue;
@@ -363,14 +372,14 @@ begin
         end;
       end;
 
-    tkArray:
+    tkArray: // Array types
       begin
         Arr[0] := AValue;
         Arr[1] := AValue * 2;
         Arr[2] := AValue * 3;
       end;
 
-    tkRecord:
+    tkRecord: // Record types
       begin
         if (FTypeInfo.NameFld.ToString = 'TSimpleRecord') then
         begin
@@ -408,6 +417,7 @@ begin
 end;
 
 function TTestCollectionBase<T>.CreateValues(const ACount: Integer): TArray<T>;
+// Creates an array of values of type T
 var
   I: Integer;
 begin
@@ -418,6 +428,7 @@ end;
 
 function TTestCollectionBase<T>.CreateValues(
   const AValues: array of Integer): TArray<T>;
+// Creates an array of values of type T from a given list of integers
 var
   I: Integer;
 begin
@@ -427,19 +438,22 @@ begin
 end;
 
 procedure TTestCollectionBase<T>.ReleaseValue(const AValue: T);
+// Releases allocated values based on the type information
 var
-  Obj: TObject absolute AValue;
-  FB: TFooBarRecord absolute AValue;
-  FBA: TFooBarArray absolute AValue;
+  Obj: TObject;
+  FB: TFooBarRecord;
+  FBA: TFooBarArray;
   I: Integer;
 begin
   case FTypeInfo.Kind of
     tkClass:
+      Obj := TObject(AValue);
       Obj.Free;
 
     tkRecord:
       if (FTypeInfo.NameFld.ToString = 'TFooBarRecord') then
       begin
+        FB := TFooBarRecord(AValue);
         FB.Foo.Free;
         FB.Bar.Free;
       end;
@@ -459,6 +473,7 @@ begin
 end;
 
 procedure TTestCollectionBase<T>.SetUp;
+// Setup method called before each test
 begin
   FTypeInfo := System.TypeInfo(T);
   System.Assert(Assigned(FTypeInfo));
@@ -471,6 +486,7 @@ begin
 end;
 
 procedure TTestCollectionBase<T>.TearDown;
+// Teardown method called after each test
 var
   Value: T;
 begin
@@ -487,6 +503,7 @@ begin
 end;
 
 procedure TTestCollectionBase<T>.TestEquals(const AExpected, AActual: T);
+// Tests if two values of type T are equal
 begin
   if (not FComparer.Equals(AExpected, AActual)) then
     Assert.Fail('Values not equal');

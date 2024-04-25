@@ -1,2 +1,7 @@
+' The following line tells the program to load the ALLTYPES data from the "alltypes.dat" file into memory
+' as a Recordset data type. This data will be used for further processing in the program.
 ALLTYPES RCDATA alltypes.dat
+
+' The following line tells the program to load the PERSON data from the "person.dat" file into memory
+' as a Recordset data type. This data will also be used for further processing in the program.
 PERSON RCDATA person.dat

@@ -52,6 +52,10 @@ implementation
 {$POINTERMATH ON}
 
 const
+  { The Base64 alphabet, used for encoding and decoding }
+  BASE64_ALPHABET: array[0..63] of Char = ('A'..'Z', 'a'..'z', '0'..'9', '+', '/');
+
+  { Maps each character in the Base64 alphabet to its 6-bit value }
   BASE64_ENCODE: array[0..64] of Byte = (
     // A..Z
     $41, $42, $43, $44, $45, $46, $47, $48, $49, $4A, $4B, $4C, $4D,
@@ -64,7 +68,7 @@ const
     // +, /, =
     $2B, $2F, $3D);
 
-const
+  { Maps each 8-bit value to its corresponding 6-bit value in the Base64 alphabet }
   BASE64_DECODE: array[0..255] of Byte = (
     $FE, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
     $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
@@ -80,9 +84,16 @@ const
     $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
     $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
     $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
-    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
     $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF);
 
+{ Encodes binary data to a Base64 buffer.
+
+  Parameters:
+    AData: pointer to the binary data.
+    ASize: size of the binary data.
+
+  Returns:
+    A byte array containing the Base64 encoded data }
 function goBase64Encode(const AData: Pointer; const ASize: Integer): TBytes;
 var
   Src: PByte;
@@ -142,6 +153,13 @@ begin
   SetLength(Result, DstIndex);
 end;
 
+{ Encodes binary data to a Base64 buffer.
+
+  Parameters:
+    AData: byte array containing the binary data.
+
+  Returns:
+    A byte array containing the Base64 encoded data }
 function goBase64Encode(const AData: TBytes): TBytes;
 begin
   if Assigned(AData) then
@@ -150,7 +168,15 @@ begin
     Result := nil;
 end;
 
-function goBase64Decode(const AData: Pointer; const ASize: Integer): TBytes; overload;
+{ Decodes Base64-encoded binary data.
+
+  Parameters:
+    AData: pointer to the Base64-encoded data.
+    ASize: size of the Base64-encoded data.
+
+  Returns:
+    A byte array containing the decoded binary data data }
+function goBase64Decode(const AData: Pointer; const ASize: Integer): TBytes;
 var
   Src: PByte;
   SrcIndex, DstIndex, Count: Integer;
@@ -171,45 +197,3 @@ begin
   begin
     B := BASE64_DECODE[Src[SrcIndex]];
     if (B = $FE) then
-      Break
-    else if (B <> $FF) then
-    begin
-      C := (C shl 6) or B;
-      Dec(Count);
-      if (Count = 0) then
-      begin
-        Result[DstIndex + 2] := Byte(C);
-        Result[DstIndex + 1] := Byte(C shr 8);
-        Result[DstIndex    ] := Byte(C shr 16);
-        Inc(DstIndex, 3);
-        C := 0;
-        Count := 4;
-      end;
-    end;
-    Inc(SrcIndex);
-  end;
-
-  if (Count = 1) then
-  begin
-    Result[DstIndex + 1] := Byte(C shr 2);
-    Result[DstIndex    ] := Byte(C shr 10);
-    Inc(DstIndex, 2);
-  end
-  else if (Count = 2) then
-  begin
-    Result[DstIndex] := Byte(C shr 4);
-    Inc(DstIndex);
-  end;
-
-  SetLength(Result, DstIndex);
-end;
-
-function goBase64Decode(const AData: TBytes): TBytes; overload; inline;
-begin
-  if Assigned(AData) then
-    Result := goBase64Decode(@AData[0], Length(AData))
-  else
-    Result := nil;
-end;
-
-end.

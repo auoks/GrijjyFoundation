@@ -7,27 +7,29 @@ unit Grijjy.Uri;
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.Net.URLClient;
+  System.SysUtils, { for String, Classes, and other utility functions }
+  System.Classes,  { for TComponent and record types }
+  System.Net.URLClient; { for TURI type }
 
 type
   TgoURI = record
   private
-    FURI: TURI;
+    FURI: TURI; { Holds the TURI instance }
   public
-    Scheme: String;
-    Username: String;
-    Password: String;
-    Host: String;
-    Port: Integer;
-    Path: String;
-    Query: String;
-    Params: String;
-    Fragment: String;
+    Scheme: String; { Holds the URI scheme }
+    Username: String; { Holds the URI username }
+    Password: String; { Holds the URI password }
+    Host: String; { Holds the URI host }
+    Port: Integer; { Holds the URI port }
+    Path: String; { Holds the URI path }
+    Query: String; { Holds the URI query }
+    Params: String; { Holds the URI parameters }
+    Fragment: String; { Holds the URI fragment }
   public
     constructor Create(const AUri: String);
+    { Create a new TgoURI instance from the given AUri string }
     function ToString: String;
+    { Convert the TgoURI instance back to a string }
   end;
 
 implementation

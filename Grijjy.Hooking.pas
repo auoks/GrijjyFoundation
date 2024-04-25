@@ -10,7 +10,7 @@ interface
   Example usage:
     HookCode(@TObject.NewInstance, @HookedNewInstance);
 
-  This redirects all call to the TObject.NewInstance method and redirect them
+  This redirects all calls to the TObject.NewInstance method and redirects them
   to the HookedNewInstance routine.
 
   This kind of hooking will likely succeed on Windows, macOS, iOS Simulator and
@@ -42,10 +42,10 @@ implementation
 
 uses
   {$IF Defined(MSWINDOWS)}
-  Winapi.Windows;
+  Winapi.Windows; // Used for VirtualProtect on Windows
   {$ELSE}
-  Posix.SysMman,
-  Posix.Unistd;
+  Posix.SysMman, // Used for mprotect on non-Windows platforms
+  Posix.Unistd;  // Used for sysconf on non-Windows platforms
   {$ENDIF}
 
 {$IF Defined(CPUX86) or Defined(CPUX64)}
@@ -69,6 +69,11 @@ var
 
 // Windows
 
+{ HookCode implementation for Windows.
+  This function replaces the first 5 bytes at ACodeAddress with a JMP instruction
+  to redirect the call to AHookAddress. It uses VirtualProtect to temporarily
+  change the memory protection of the code page to allow writing.
+  Returns True on success or False on failure. }
 function HookCode(const ACodeAddress, AHookAddress: Pointer): Boolean;
 var
   OldProtect: DWORD;
@@ -106,6 +111,11 @@ end;
 
 // macOS, iOS Simulator, Linux
 
+{ HookCode implementation for macOS, iOS Simulator, and Linux.
+  This function replaces the first 5 bytes at ACodeAddress with a JMP instruction
+  to redirect the call to AHookAddress. It uses mprotect to temporarily change
+  the memory protection of the code page to allow writing.
+  Returns True on success or False on failure. }
 function HookCode(const ACodeAddress, AHookAddress: Pointer): Boolean;
 var
   AlignedCodeAddress: UIntPtr;
@@ -114,7 +124,7 @@ var
 begin
   { This version is similar to HookCode on Windows, except that we need to use
     the "mprotect" API instead of "VirtualProtect". mprotect only works with
-    while memory pages, so we must align ACodeAddress to the size of a memory
+    whole memory pages, so we must align ACodeAddress to the size of a memory
     page. This page size is retrieved during initialization using the
     "sysconf(_SC_PAGESIZE)" API. }
   AlignedCodeAddress := UIntPtr(ACodeAddress) and (not (GPageSize - 1));
@@ -139,6 +149,10 @@ end;
 
 // iOS, Android
 
+{ HookCode implementation for iOS and Android.
+  These platforms do not allow changing the protection level of executable
+  memory pages, so hooking is not supported.
+  Returns False. }
 function HookCode(const ACodeAddress, AHookAddress: Pointer): Boolean;
 begin
   { We are not allowed to change protection levels of executable memory pages
@@ -152,6 +166,11 @@ end;
 
 // Windows
 
+{ HookVMT implementation for Windows.
+  This function replaces the value at AVMTEntry with a pointer to the
+  AHookAddress. It uses VirtualProtect to temporarily change the memory
+  protection of the VMT page to allow writing.
+  Returns True on success or False on failure. }
 function HookVMT(const AVMTEntry, AHookAddress: Pointer): Boolean;
 var
   OldProtect: DWORD;
@@ -176,13 +195,18 @@ end;
 
 // macOS, iOS (Simulator), Android, Linux
 
+{ HookVMT implementation for macOS, iOS Simulator, Android, and Linux.
+  This function replaces the value at AVMTEntry with a pointer to the
+  AHookAddress. It uses mprotect to temporarily change the memory protection
+  of the VMT page to allow writing.
+  Returns True on success or False on failure. }
 function HookVMT(const AVMTEntry, AHookAddress: Pointer): Boolean;
 var
   AlignedCodeAddress: UIntPtr;
 begin
   { This version is similar to HookVMT on Windows, except that we need to use
     the "mprotect" API instead of "VirtualProtect". mprotect only works with
-    while memory pages, so we must align AVMTEntry to the size of a memory
+    whole memory pages, so we must align AVMTEntry to the size of a memory
     page. This page size is retrieved during initialization using the
     "sysconf(_SC_PAGESIZE)" API. }
   AlignedCodeAddress := UIntPtr(AVMTEntry) and (not (GPageSize - 1));

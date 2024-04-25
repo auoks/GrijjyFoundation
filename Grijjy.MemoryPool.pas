@@ -1,42 +1,41 @@
-unit Grijjy.MemoryPool;
+unit Grijjy.MemoryPool; (* A reusable memory pooling class unit*)
 
-{ A reusable memory pooling class }
-
-{$I Grijjy.inc}
+(*
+{$I Grijjy.inc} - Includes the Grijjy.inc file
+*)
 
 interface
 
+(*
 uses
-  System.Classes,
-  System.SysUtils,
-  System.SyncObjs,
-  System.Generics.Collections;
+  System.Classes, System.SysUtils, System.SyncObjs, System.Generics.Collections; - Imports necessary classes and units
+*)
 
 const
-  MAX_BLOCKS_QUEUED = 1024;
+  MAX_BLOCKS_QUEUED = 1024; (* The maximum number of blocks that can be queued in the memory pool *)
 
 type
   TgoMemoryPool = class(TObject)
   private
-    FBlockSize: Integer;
-    FMaxBlocksQueued: Integer;
-    FBlocks: TQueue<Pointer>;
-    FLock: TCriticalSection;
-    function GetCount: Integer;
-    function GetSize: Integer;
-    procedure Clear;
+    FBlockSize: Integer; (* The size of each memory block in the pool *)
+    FMaxBlocksQueued: Integer; (* The maximum number of blocks that can be queued in the memory pool *)
+    FBlocks: TQueue<Pointer>; (* A queue of available memory blocks *)
+    FLock: TCriticalSection; (* A critical section to protect concurrent access to the memory pool *)
+    function GetCount: Integer; (* Returns the current number of memory blocks in the pool *)
+    function GetSize: Integer; (* Returns the total size of all memory blocks in the pool *)
+    procedure Clear; (* Frees all memory blocks in the pool *)
   public
-    constructor Create(const ABlockSize: Integer; const AMaxBlocksQueued: Integer = MAX_BLOCKS_QUEUED);
-    destructor Destroy; override;
+    constructor Create(const ABlockSize: Integer; const AMaxBlocksQueued: Integer = MAX_BLOCKS_QUEUED); (* Creates a new memory pool with the specified block size and maximum queue size *)
+    destructor Destroy; override; (* Frees all memory blocks and the critical section when the memory pool is destroyed *)
   public
-    function RequestMem: Pointer; overload;
-    function RequestMem(const AName: String): Pointer; overload;
-    procedure ReleaseMem(P: Pointer); overload;
-    procedure ReleaseMem(P: Pointer; const AName: String); overload;
+    function RequestMem: Pointer; overload; (* Requests a memory block from the pool *)
+    function RequestMem(const AName: String): Pointer; overload; (* Requests a memory block from the pool with a specified name *)
+    procedure ReleaseMem(P: Pointer); overload; (* Releases a memory block back to the pool *)
+    procedure ReleaseMem(P: Pointer; const AName: String); overload; (* Releases a memory block back to the pool with a specified name *)
   public
-    property BlockSize: Integer read FBlockSize;
-    property Count: Integer read GetCount;
-    property Size: Integer read GetSize;
+    property BlockSize: Integer read FBlockSize; (* The size of each memory block in the pool *)
+    property Count: Integer read GetCount; (* The current number of memory blocks in the pool *)
+    property Size: Integer read GetSize; (* The total size of all memory blocks in the pool *)
   end;
 
 implementation
@@ -157,4 +156,4 @@ begin
   Result := FBlocks.Count * FBlockSize;
 end;
 
-end.
+end.

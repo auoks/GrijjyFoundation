@@ -42,6 +42,10 @@ SOFTWARE }
 
 {$I Grijjy.inc}
 
+{$IFNDEF MACOS}
+  {$MESSAGE Error 'This unit should only be used in macOS and iOS projects.'}
+{$ENDIF}
+
 interface
 
 uses
